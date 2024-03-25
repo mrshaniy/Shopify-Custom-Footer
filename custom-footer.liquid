@@ -1,0 +1,232 @@
+{{ 'custom-footer.css' | asset_url | stylesheet_tag }}
+{% style %}
+  .sfyn-custom-footer {
+      {% if section.settings.slct-bg == 'gradient' %}background:{{ section.settings.section_background_gradient }};{% endif %}
+      {% if section.settings.slct-bg == 'solid' %}background:{{ section.settings.section-background }};{% endif %}
+      {% if section.settings.slct-bg == 'image' %}background-image:url({{ section.settings.bg_img | img_url: 'master'}});
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center; {% endif %}
+    }
+{% endstyle %}
+<!-- custom-footer.liquid -->
+<footer>
+  <div class="sfyn-custom-footer{% if section.settings.section-extra-class != blank %} {{ section.settings.section-extra-class }}{% endif %}">
+    <div class="sfyn-custom-container">
+      <div class="sfyn-custom-row">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'logo_block' %}
+              <div class="sfyn-foo-block-item sfyn-footer-logo-item">
+                <div class="sfyn-foo-block-same-padding">
+                  {% if block.settings.block_heading != blank %}
+                    <h3 class="sfyn-foo-block-heading">{{ block.settings.block_heading }}</h3>
+                  {% endif %}
+                  {% if block.settings.footer_logo != blank %}
+                    <a href="/">
+                      <img
+                        src="{{ block.settings.footer_logo | img_url: 'master' }}"
+                        width="150"
+                        height="150"
+                        alt="Store Logo"
+                    ></a>
+                  {% endif %}
+                  {% if block.settings.block_desc != blank %}
+                    <div class="sfyn-footer-col-desc">{{ block.settings.block_desc }}</div>
+                  {% endif %}
+                  {% if section.settings['use_footer-social-icon'] != blank %}
+                    <div class="sfyn-footer-social-icon">
+                      {% render 'social-icons' %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% when 'menu' %}
+              <div class="sfyn-foo-block-item sfyn-footer-menu-item">
+                <div class="sfyn-foo-block-same-padding">
+                  {% if block.settings.block_heading != blank %}
+                    <h3 class="sfyn-foo-block-heading" id="sfyn-acc-menu">{{ block.settings.block_heading }}</h3>
+                  {% endif %}
+                  {% if block.settings['footer-menu'] != blank %}
+                    <ul class="sfyn-footer-menu-wrapper">
+                      {% for link in block.settings['footer-menu'].links %}
+                        <li>
+                          <a href="{{ link.url }}">{{ link.title }}</a>
+                        </li>
+                      {%- endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+            {% when 'newsletter' %}
+              <div class="sfyn-foo-block-item sfyn-footer-newsletter-item">
+                <div class="sfyn-foo-block-same-padding">
+                  {% if block.settings.block_heading != blank %}
+                    <h3 class="sfyn-foo-block-heading">{{ block.settings.block_heading }}</h3>
+                  {% endif %}
+                  {% if block.settings.block_desc != blank %}
+                    <div class="sfyn-footer-col-desc">{{ block.settings.block_desc }}</div>
+                  {% endif %}
+                  <div class="sfyn-newsletter-form">
+                    {% form 'contact' %}
+                      {{ form.errors | default_errors }}
+                      <div class="sfyn-form-field-wrapper">
+                        <div class="email">
+                          <input type="email" name="contact[email]" id="email" placeholder="Enter Your Email">
+                        </div>
+
+                        <div class="submit">
+                          <button type="sumbit" class="sfyn-footer-form-btn">Subscribe</button>
+                        </div>
+                      </div>
+                    {% endform %}
+                  </div>
+                </div>
+              </div>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% if section.settings.copyright_text != blank %}
+    <div class="sfyn-footer-copyright">
+      <p>{{ section.settings.copyright_text }}</p>
+    </div>
+  {% endif %}
+</footer>
+<script>
+    $(document).ready(function() {
+      if ($(window).width() < 520) {
+          $('.sfyn-footer-menu-wrapper').slideUp();
+
+          $('.sfyn-foo-block-item').on('click', '#sfyn-acc-menu', function() {
+              var $wrapper = $(this).closest('.sfyn-foo-block-item').find('.sfyn-footer-menu-wrapper');
+              $('.sfyn-footer-menu-wrapper').not($wrapper).slideUp();
+              $wrapper.slideToggle();
+
+              // Toggle sfyn-active class for clicked menu item
+              $(this).closest('.sfyn-foo-block-item').toggleClass('sfyn-active');
+              $('.sfyn-foo-block-item').not($(this).closest('.sfyn-foo-block-item')).removeClass('sfyn-active');
+          });
+      }
+  });
+</script>
+{% schema %}
+{
+   "name": "Custom Footer",
+   "settings": [
+     {
+      "type": "select",
+      "options": [
+        { "value": "gradient", "label": "Gradient" },
+        { "value": "solid", "label": "Background Solid Color"},
+        { "value": "image", "label": "Background Image"}
+        ],
+      "id": "slct-bg",
+      "default": "solid",
+      "label": "Section Background Type"
+    },
+    {
+      "type": "color_background",
+      "label": "Section Background Gradient",
+      "id": "section_background_gradient"
+    },
+    {
+      "type": "color",
+      "id": "section-background",
+      "info": "Background",
+      "default": "#13171a",
+      "label": "Section Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_img",
+      "info": "Background Image",
+      "label": "BG Image"
+    },
+    {
+      "type": "text",
+      "id": "section-extra-class",
+      "info": "Add section class (without.). Use spaces to add multiple classes",
+      "label": "Section Class"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "default": "© 2024 My Store, All rights reserved",
+      "label": "Copyright Text"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_footer-social-icon",
+      "default": true,
+      "info": "Uncheck the checkbox to hide the social icons.",
+      "label": "Use Social Icon?"
+    }
+   ],
+   "blocks":[
+     {
+       "type":"logo_block",
+       "limit": 1,
+       "name":"Logo",
+       "settings":[
+         {
+           "type": "text",
+           "id": "block_heading",
+           "label": "Block Heading"
+         },
+         {
+           "type": "image_picker",
+           "id": "footer_logo",
+           "label": "Logo"
+         },
+         {
+           "type": "richtext",
+           "id": "block_desc",
+           "label": "Short Description"
+         }
+       ]
+     },
+     {
+       "type":"menu",
+       "limit": 3,
+       "name":"Menu",
+       "settings":[
+         {
+           "type": "text",
+           "id": "block_heading",
+           "label": "Block Heading"
+         },
+         {
+           "type": "link_list",
+           "id": "footer-menu",
+           "label": "Select Menu"
+         }
+       ]
+     },
+      {
+       "type":"newsletter",
+       "limit": 1,
+       "name":"Newsletter",
+       "settings":[
+         {
+           "type": "text",
+           "id": "block_heading",
+           "label": "Block Heading"
+         },
+         {
+           "type": "richtext",
+           "id": "block_desc",
+           "label": "Short Description"
+         }
+       ]
+     }
+   ],
+   "presets": [
+     {
+       "name": "Custom Footer",
+       "category": "Sfyn Custom Section"
+     }
+   ]
+ }
+{% endschema %}
